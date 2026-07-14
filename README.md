@@ -2,6 +2,8 @@
 
 **A desktop app for ML-powered inverse kinematics** — design a robot, generate a dataset, train a neural network, validate it in 3D, and export it for real hardware.
 
+> 📖 For more details, go through the **[documentation](https://saisasi2004.github.io/Neuro-IK/)**.
+
 ## Features
 
 - **Robot Selection**: SCARA, Delta, Cartesian, Articulated (2–12 DOF)
@@ -41,13 +43,11 @@ Puts a **NeuroIK** icon on your Desktop that launches the app with no console wi
 
 ## Documentation
 
-Full manual — installation, every robot type and architecture, and copy-paste integration code for each export format:
+📖 **[Read the full documentation →](https://saisasi2004.github.io/Neuro-IK/)**
 
-```
-docs/index.html
-```
+Installation, every robot type and architecture explained, the Simulation Studio, and copy-paste integration code for each export format.
 
-Open it in any browser.
+Also available offline — open `docs/index.html` in any browser.
 
 ## Where files are stored
 
@@ -109,3 +109,15 @@ python -m uvicorn backend.main:app --port 8000
 - **Exported model returning nonsense?** ONNX/TF Lite/TensorRT graphs expect a *normalized* pose and return *normalized* joints. Apply the constants from the `model_meta.json` shipped alongside them (see the docs).
 - **TinyML** generates a complete, runnable `ik_forward()` for **MLP** models only — other architectures can't reduce to straight-line C. Train an MLP for microcontrollers.
 - **TensorFlow** is only needed for the TF Lite export; every other format works without it.
+
+## Future Extensions
+
+- URDF / Xacro import
+- Isaac Sim / MuJoCo / PyBullet integration
+- Motion planning
+- Multi-robot support
+- Digital twin
+
+## License
+
+MIT
