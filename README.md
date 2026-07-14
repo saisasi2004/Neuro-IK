@@ -110,14 +110,3 @@ python -m uvicorn backend.main:app --port 8000
 - **TinyML** generates a complete, runnable `ik_forward()` for **MLP** models only — other architectures can't reduce to straight-line C. Train an MLP for microcontrollers.
 - **TensorFlow** is only needed for the TF Lite export; every other format works without it.
 
-## Future Extensions
-
-- URDF / Xacro import
-- Isaac Sim / MuJoCo / PyBullet integration
-- Motion planning
-- Multi-robot support
-- Digital twin
-
-## License
-
-MIT
