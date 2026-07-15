@@ -6,13 +6,14 @@
 
 ## Features
 
-- **Robot Selection**: SCARA, Delta, Cartesian, Articulated (2–12 DOF)
-- **Recipe Builder**: Configure links, joint types and limits, with a live 3D preview
+- **Robot Selection**: SCARA, Delta, Cartesian, Articulated (2–12 DOF), or **import your own URDF/Xacro**
+- **Custom URDF**: Point at a `.urdf`/`.xacro` file or its folder — joints, limits and link lengths populate automatically, and your STL/DAE/OBJ meshes render in 3D
+- **Recipe Builder**: Configure links, joint types and limits, with a live 3D preview and per-joint sliders to pose the arm
 - **Dataset Generation**: FK-first approach — every sample is reachable by construction
 - **ML Studio**: Train 6 architectures (MLP, Transformer, GNN, Diffusion, PINN, RL Agent) with live metrics, loss curves and a target-vs-predicted scatter
-- **Simulation Studio**: Interactive 3D viewport with ML inference, analytical-IK comparison and FK validation
+- **Simulation Studio**: Interactive 3D viewport with ML inference, analytical-IK comparison (with the formulas one click away) and FK validation
 - **Multi-format Export**: ONNX, PyTorch, TF Lite, TensorRT, ROS2, TinyML (C header)
-- **Projects**: Recipes, datasets, trained models and exports saved per project
+- **Projects**: Recipes, datasets, trained models and exports saved per project — delete any of them from the Dashboard
 
 ## Quick Start
 
@@ -35,19 +36,39 @@ Puts a **NeuroIK** icon on your Desktop that launches the app with no console wi
 ## Workflow
 
 1. **Projects** → Create a project (or reopen one, with all its state restored)
-2. **Select Robot** → SCARA, Delta, Cartesian, or Articulated
+2. **Select Robot** → SCARA, Delta, Cartesian, Articulated, or **Custom URDF** (enter the path to your `.urdf`/`.xacro` file or its folder)
 3. **Prepare Recipe** → Configure the arm, generate a dataset, view workspace analytics
 4. **ML Studio** → Pick a model, tune hyperparameters, train with a live dashboard
 5. **Simulation** → Test predictions in 3D, validate with FK, measure error
 6. **Export** → ONNX, PyTorch, TF Lite, TensorRT, ROS2, or TinyML
+
+## Custom URDF import
+
+Choose **Custom URDF** on the Robot Selection screen and enter a path — either the `.urdf`/`.xacro`
+file itself, or **the folder containing it** (best, since mesh paths resolve relative to that folder).
+
+NeuroIK reads the real kinematic chain — every joint's `origin` (xyz + rpy) and `axis` — so an
+imported robot runs on a dedicated exact-kinematics engine rather than approximated DH parameters.
+Joint types, joint limits and link lengths populate the Recipe Builder automatically, and your CAD
+renders in both the Live Preview and Simulation.
+
+- **Mesh formats:** `STL`, `DAE`, `OBJ`. URDF `<box>/<cylinder>/<sphere>` primitives render too.
+  Other formats (STEP, IGES) are B-rep CAD that a browser can't tessellate — those links show a
+  placeholder and the **kinematics are unaffected**.
+- **Xacro:** properties, `${...}` expressions, `<xacro:include>` and `<xacro:if>/<xacro:unless>` are
+  expanded internally (no ROS install needed). Files using `<xacro:macro>` are **not** supported —
+  pre-expand them with `xacro robot.xacro -o robot.urdf` and import the result.
+- **Mimic joints** are dependent, not DOF: they're excluded from the joint count and follow their
+  source joint in 3D (e.g. a gripper's second finger).
+- **Editing after import:** joint limits and link lengths stay editable — changing a link length
+  rescales the spacing to the next joint. CAD meshes are rigid and keep their own size, so a large
+  change will show a visible gap. The DOF count and joint types are fixed by the file.
 
 ## Documentation
 
 📖 **[Read the full documentation →](https://saisasi2004.github.io/Neuro-IK/)**
 
 Installation, every robot type and architecture explained, the Simulation Studio, and copy-paste integration code for each export format.
-
-Also available offline — open `docs/index.html` in any browser.
 
 ## Where files are stored
 
@@ -109,4 +130,5 @@ python -m uvicorn backend.main:app --port 8000
 - **Exported model returning nonsense?** ONNX/TF Lite/TensorRT graphs expect a *normalized* pose and return *normalized* joints. Apply the constants from the `model_meta.json` shipped alongside them (see the docs).
 - **TinyML** generates a complete, runnable `ik_forward()` for **MLP** models only — other architectures can't reduce to straight-line C. Train an MLP for microcontrollers.
 - **TensorFlow** is only needed for the TF Lite export; every other format works without it.
-
+- **Imported URDF shows fewer meshes than the folder holds?** That's expected — NeuroIK draws the
+  links the URDF *declares*. Spare STLs shipped alongside it aren't referenced by the description.
