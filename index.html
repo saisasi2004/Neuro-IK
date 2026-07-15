@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroIK Documentation</title>
+<link rel="icon" href="assets/robot-arm.png" type="image/png">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+
+<div class="layout">
+
+<!-- ======================= SIDEBAR ======================= -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo"><img src="assets/robot-arm.png" alt="robotic-arm"></div>
+        <div>
+            <div class="brand-name">NeuroIK Docs</div>
+            <div class="brand-tag">IK Design &amp; Deployment</div>
+        </div>
+    </div>
+    <div class="toc" id="toc">
+        <div class="toc-group">Getting started</div>
+        <a href="#overview">1 · Overview</a>
+        <a href="#install">2 · Installation &amp; Launch</a>
+        <div class="toc-group">Building a robot</div>
+        <a href="#robots">3 · Robot Selection</a>
+        <a href="#recipe" class="sub">3.2 Recipe Builder</a>
+        <a href="#dataset">4 · Dataset Generation</a>
+        <div class="toc-group">Training</div>
+        <a href="#mlstudio">5 · ML Studio</a>
+        <a href="#models" class="sub">5.1 Architectures</a>
+        <a href="#choosing" class="sub">5.2 Choosing a model</a>
+        <div class="toc-group">Using the model</div>
+        <a href="#simulation">6 · Simulation Studio</a>
+        <a href="#export">7 · Exporting Models</a>
+        <div class="toc-group">Reference</div>
+        <a href="#architecture">8 · Architecture</a>
+        <a href="#projects">9 · Project Management</a>
+        <a href="#faq">10 · Troubleshooting</a>
+    </div>
+</nav>
+
+<!-- ======================= CONTENT ======================= -->
+<main class="content">
+
+<header class="hero">
+    <h1>NeuroIK Documentation</h1>
+    <p class="tagline">Desktop IK Design, Training &amp; Deployment</p>
+    <div class="pills">
+        <span class="pill">4 robot types</span>
+        <span class="pill">6 neural architectures</span>
+        <span class="pill">6 export targets</span>
+        <span class="pill">2–12 DOF</span>
+    </div>
+</header>
+
+<!-- ============ 1. OVERVIEW ============ -->
+<section id="overview">
+<h2><span class="num">1</span>Overview</h2>
+
+<p><strong>NeuroIK</strong> is a desktop application for designing robot arms, generating synthetic
+training data, teaching neural networks to solve <strong>inverse kinematics (IK)</strong>, validating
+predictions in a live 3D viewport, and exporting trained models for real-world deployment — from
+NVIDIA GPUs down to an ESP32.</p>
+
+<h3>The core idea: FK-first data</h3>
+<p>Inverse kinematics asks: <em>“which joint angles put the gripper here?”</em> Generating training
+data by guessing poses would fill the dataset with unreachable targets. NeuroIK inverts the problem:</p>
+<ol>
+    <li>Your recipe defines each joint's limits.</li>
+    <li>Random joint values are sampled <em>within</em> those limits.</li>
+    <li><strong>Forward kinematics</strong> computes exactly where the end-effector lands.</li>
+</ol>
+<p>Every row is therefore reachable by construction, and the network learns the inverse of a
+guaranteed-correct mapping. No impossible poses ever enter training.</p>
+
+<div class="callout">
+    <strong>Note:</strong> IK is <em>one-to-many</em> — many joint configurations reach the same pose.
+    NeuroIK trains against a forward-kinematics (task-space) loss, rewarding <em>any</em> joint vector
+    that reaches the target, rather than forcing the network to average conflicting valid answers.
+</div>
+
+<h3>What's included</h3>
+<div class="grid g2">
+    <div class="card"><h4>Robot types</h4><p>SCARA, Delta, Cartesian, Articulated (2–12 DOF), or import your own URDF/Xacro</p></div>
+    <div class="card"><h4>Architectures</h4><p>MLP, Transformer, GNN, Diffusion, PINN, RL Agent</p></div>
+    <div class="card"><h4>Export targets</h4><p>ONNX, PyTorch, TF Lite, TensorRT, ROS2, TinyML</p></div>
+    <div class="card"><h4>Under the hood</h4><p>HTML5 / CSS3 / Vanilla JS + Three.js + Chart.js, on a Python 3.11 · FastAPI · PyTorch 2 engine</p></div>
+</div>
+
+<figure>
+    <img src="assets/img/01-projects.png" alt="NeuroIK projects screen">
+    <figcaption>The landing screen — create a new project or reopen a previous one with its recipe, datasets and trained models restored.</figcaption>
+</figure>
+</section>
+
+<!-- ============ 2. INSTALLATION ============ -->
+<section id="install">
+<h2><span class="num">2</span>Installation &amp; Launch</h2>
+
+<h3>2.1 System requirements</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Component</th><th>Minimum</th><th>Recommended</th></tr></thead>
+<tbody>
+<tr><td><strong>OS</strong></td><td>Windows 10/11, macOS 12+, Ubuntu 22.04+</td><td>Windows 11</td></tr>
+<tr><td><strong>Python</strong></td><td>3.11+</td><td>3.11</td></tr>
+<tr><td><strong>RAM</strong></td><td>8 GB</td><td>16 GB</td></tr>
+<tr><td><strong>GPU</strong></td><td>None — CPU fallback</td><td>NVIDIA, CUDA 11.8+</td></tr>
+<tr><td><strong>Disk</strong></td><td>2 GB</td><td>8 GB (PyTorch + TensorFlow)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>2.2 Install &amp; run</h3>
+<p>Put the NeuroIK folder anywhere you like and <strong>double-click <code>NeuroIK.bat</code></strong>.
+That is the whole installation.</p>
+
+<p>On the first run it installs everything NeuroIK needs and then opens the app. Every run after that
+skips straight to opening the app.</p>
+
+<div class="callout warn">
+    <strong>Heads-up — first run only:</strong> a console window appears while the dependencies download.
+    This is a few GB and takes several minutes; leave it alone until it finishes and the app window
+    appears. Later launches are silent and much faster.
+</div>
+
+<div class="callout tip">
+    <strong>Tip:</strong> want an icon on your Desktop? Run <code>python desktop.py --install-shortcut</code>
+    once. Afterwards you can start NeuroIK from the Desktop icon instead of the batch file — no console,
+    just the app.
+</div>
+
+<p>Closing the app window shuts everything down; nothing keeps running in the background.</p>
+
+<h3>2.3 Where files are stored</h3>
+<p>Everything the app produces lives under a single <code>data/</code> folder:</p>
+<pre><code>NeuroIK/
+└── data/
+    ├── datasets/   <span class="tok-c"># generated CSVs</span>
+    ├── models/     <span class="tok-c"># training checkpoints (best_model.pt)</span>
+    ├── exports/    <span class="tok-c"># exported models, one subfolder per format</span>
+    └── projects/   <span class="tok-c"># project state (JSON)</span></code></pre>
+<p>You can additionally mirror datasets and exports to a folder of your choosing — see
+<a href="#projects">Project Management</a>.</p>
+
+<h3>2.4 First run</h3>
+<p>NeuroIK opens on the <strong>Projects</strong> screen with no projects yet. Name a project, click
+<strong>Create Project</strong>, and you land on Robot Selection — step 1 of the workflow numbered in
+the sidebar.</p>
+</section>
+
+<!-- ============ 3. ROBOTS ============ -->
+<section id="robots">
+<h2><span class="num">3</span>Robot Selection &amp; Configuration</h2>
+
+<figure>
+    <img src="assets/img/02-robot-selection.png" alt="Robot selection screen">
+    <figcaption>Step 1 — pick the kinematic family. Each card shows the DOF range and typical uses.</figcaption>
+</figure>
+
+<h3>3.1 Available robot types</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Type</th><th>DOF</th><th>Description</th><th>Best for</th></tr></thead>
+<tbody>
+<tr><td><strong>SCARA</strong></td><td>3–4</td><td>Selective Compliance Assembly Robot Arm — fast planar motion with vertical reach</td><td>Pick-and-place, assembly, PCB manufacturing</td></tr>
+<tr><td><strong>Delta</strong></td><td>3 (fixed)</td><td>Parallel linkage — three arms 120° apart</td><td>Packaging, food, pharma, high-speed sorting</td></tr>
+<tr><td><strong>Cartesian</strong></td><td>3–6</td><td>Linear X/Y/Z travel, optional roll/pitch/yaw wrist</td><td>CNC, 3D printing, lab automation, gantries</td></tr>
+<tr><td><strong>Articulated</strong></td><td>2–12</td><td>Serial manipulator with rotary joints — the most versatile</td><td>Welding, painting, material handling</td></tr>
+<tr><td><strong>Custom URDF</strong></td><td>2–12</td><td>Import your own robot from a <code>.urdf</code>/<code>.xacro</code> file — exact chain + your CAD meshes</td><td>Real hardware you already have a description for</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>SCARA</h4>
+<p>Two revolute joints sweep in a horizontal plane, a prismatic Z axis mounted at the elbow provides
+vertical travel, and an optional 4th revolute wrist spins the tool.
+<strong>IK:</strong> closed-form analytical.
+<strong>Parameters:</strong> link lengths L1/L2 (m), Z travel range, optional wrist limits.</p>
+
+<h4>Delta</h4>
+<p>Three arms mounted 120° apart drive a floating platform; the robot hangs from its base and reaches
+<em>below</em> it, so its Z workspace is negative.
+<strong>IK:</strong> trilateration.
+<strong>Parameters:</strong> exactly four —
+<code>[R_base, R_platform, L_upper, L_lower]</code>.</p>
+<div class="callout"><strong>Note:</strong> a Delta is a 3-DOF translation-only machine — orientation
+is always zero. Those constant pose dimensions are detected and masked during training.</div>
+
+<h4>Cartesian</h4>
+<p>Three prismatic axes map 1:1 onto X/Y/Z, with an optional wrist.
+<strong>IK:</strong> direct mapping — no iteration needed.
+<strong>Parameters:</strong> travel range per axis.</p>
+
+<h4>Articulated</h4>
+<p>An anthropomorphic chain: a base yaw joint and column, parallel-pitch shoulder and elbow, and — at
+6+ DOF — a spherical wrist (roll · pitch · roll) whose axes meet at a single point.
+DH parameters are generated automatically from your link lengths, and the home pose stands straight up
+along +Z.
+<strong>IK:</strong> numerical damped least-squares with 12 multi-start restarts.</p>
+
+<h4 id="urdf">Custom URDF</h4>
+<p>Instead of describing a robot by hand, import one. Click <strong>Custom URDF</strong> and enter a
+path — either the <code>.urdf</code>/<code>.xacro</code> file, or <strong>the folder containing
+it</strong> (recommended: mesh references resolve relative to that folder).</p>
+
+<p>NeuroIK walks the real chain and uses each joint's true <code>origin</code> (xyz + rpy) and
+<code>axis</code>, so imported robots run on a dedicated <strong>exact-kinematics engine</strong> —
+not the auto-generated DH approximation used by the generic Articulated type. That exactness is what
+lets your CAD line up with the joint motion.
+<strong>IK:</strong> numerical damped least-squares with multi-start restarts.</p>
+
+<h5>What gets imported</h5>
+<ul>
+    <li><strong>Joint count, types and limits</strong> — revolute limits convert from radians to
+        degrees; prismatic stays in metres. <code>continuous</code> joints and joints with no
+        <code>&lt;limit&gt;</code> default to ±180° (you'll get a warning).</li>
+    <li><strong>Link lengths</strong> — the distance from each actuated joint to the next, with any
+        intervening <code>fixed</code> joints folded in.</li>
+    <li><strong>Visual geometry</strong> — rendered in the Live Preview and Simulation.</li>
+</ul>
+
+<h5>Mesh formats</h5>
+<p><strong>STL</strong>, <strong>DAE</strong> and <strong>OBJ</strong> are rendered, as are URDF
+<code>&lt;box&gt;</code>/<code>&lt;cylinder&gt;</code>/<code>&lt;sphere&gt;</code> primitives.
+Paths are resolved through <code>package://</code>, <code>file://</code>, absolute and relative
+forms — and finally by filename anywhere under the folder, which covers descriptions whose
+<code>package://</code> paths don't match the shipped layout.</p>
+<div class="callout"><strong>STEP / IGES are not rendered.</strong> They're B-rep CAD formats that
+need a CAD kernel to tessellate into triangles — a browser can't. Those links show a translucent
+placeholder; <strong>kinematics, datasets and training are unaffected</strong>.</div>
+
+<h5>Xacro support</h5>
+<p><code>.xacro</code> files are expanded internally — <strong>no ROS install required</strong>:
+<code>&lt;xacro:property&gt;</code>, <code>${...}</code> arithmetic, <code>&lt;xacro:include&gt;</code>
+and <code>&lt;xacro:if&gt;</code>/<code>&lt;xacro:unless&gt;</code>. Expressions are evaluated over a
+restricted AST, never <code>eval()</code>.</p>
+<div class="callout warn"><strong><code>&lt;xacro:macro&gt;</code> is not supported.</strong>
+Expanding macros correctly is a large job, and a partial implementation would silently produce a
+<em>wrong</em> robot. Pre-expand instead:
+<code>xacro robot.xacro -o robot.urdf</code>, then import the generated <code>robot.urdf</code>.</div>
+
+<h5>Branches and mimic joints</h5>
+<p>The <strong>whole tree is drawn</strong>, not just the actuated chain — so side branches like a
+gripper's second finger appear. The DOF, however, come from the longest actuated chain.</p>
+<p>A <code>&lt;mimic&gt;</code> joint is driven by another joint, so it is <em>not</em> an independent
+DOF: it's excluded from the joint count (and from the network's outputs) but follows its source in
+3D via <code>value = multiplier × source + offset</code>.</p>
+
+<h5>Editing after import</h5>
+<p>Joint <strong>limits</strong> and <strong>link lengths</strong> stay editable — narrowing limits is
+a legitimate way to shape the dataset, and changing a link length rescales the spacing to the next
+joint (kinematics and the 3D view stay in step). The <strong>DOF count and joint types are locked</strong>
+by the file: the engine rejects a joint count that disagrees with the parsed chain, and flipping a
+type would corrupt the degrees/metres conversion.</p>
+<div class="callout"><strong>Note:</strong> CAD meshes are rigid parts — they keep their own size when
+you change a link length, so a large change will show a visible gap between links.</div>
+
+<h5>Only some of my meshes appear</h5>
+<p>NeuroIK draws the links the URDF <em>declares</em>. If a folder ships 13 STLs but the description
+references 7, you'll see 7 — the rest are spare parts no link points at. Add
+<code>&lt;link&gt;</code>/<code>&lt;joint&gt;</code> entries to use them.</p>
+
+<h3 id="recipe">3.2 Recipe Builder</h3>
+<figure>
+    <img src="assets/img/03-recipe-builder.png" alt="Recipe builder">
+    <figcaption>Step 2 — link lengths, joint types and limits, dataset size, plus a live 3D preview of the arm you are describing.</figcaption>
+</figure>
+
+<p>The Recipe Builder is where a robot becomes concrete:</p>
+<ul>
+    <li><strong>Link lengths</strong> — each joint's link, in metres.</li>
+    <li><strong>Joint type</strong> — revolute (degrees) or prismatic (metres).</li>
+    <li><strong>Joint limits</strong> — min/max per joint. These bound the sampling, so they define the
+        reachable workspace.</li>
+    <li><strong>Dataset size</strong> — 10K, 100K or 1M samples.</li>
+    <li><strong>Name</strong> — saved with the project.</li>
+</ul>
+
+<h4>Live Robot Preview</h4>
+<p>The preview renders through the <em>same</em> code as the Simulation tab, so what you see here is
+what you'll simulate. It updates as you type — no need to regenerate a dataset first.</p>
+<ul>
+    <li><strong>Joint Controls</strong> — one slider per joint, bounded to the limits you set, to pose
+        the arm and sanity-check its reach before committing to a dataset.</li>
+    <li><strong>SCARA J3</strong> — the vertical prismatic travel is derived from the 3rd link length
+        (the quill descends from <code>0</code> to <code>−L3</code>), so those limit fields are
+        read-only and follow the link.</li>
+    <li>Imported URDFs are framed automatically, since they arrive at any scale.</li>
+</ul>
+
+<span class="code-label">Saved recipe (JSON)</span>
+<pre><code>{
+  <span class="tok-s">"robot_type"</span>: <span class="tok-s">"articulated"</span>,
+  <span class="tok-s">"num_joints"</span>: <span class="tok-n">6</span>,
+  <span class="tok-s">"link_lengths"</span>: [<span class="tok-n">0.2</span>, <span class="tok-n">0.4</span>, <span class="tok-n">0.4</span>, <span class="tok-n">0.1</span>, <span class="tok-n">0.1</span>, <span class="tok-n">0.05</span>],
+  <span class="tok-s">"joints"</span>: [
+    { <span class="tok-s">"joint_type"</span>: <span class="tok-s">"revolute"</span>, <span class="tok-s">"min_limit"</span>: <span class="tok-n">-180</span>, <span class="tok-s">"max_limit"</span>: <span class="tok-n">180</span> }
+  ],
+  <span class="tok-s">"recipe_name"</span>: <span class="tok-s">"My Robot"</span>,
+  <span class="tok-s">"dataset_size"</span>: <span class="tok-n">100000</span>
+}</code></pre>
+
+<div class="callout warn">
+    <strong>Warning:</strong> the recipe defines the model's input/output shape. If you change link
+    lengths or joint count afterwards, <strong>regenerate the dataset and retrain</strong> — an old
+    model no longer describes the new robot.
+</div>
+</section>
+
+<!-- ============ 4. DATASET ============ -->
+<section id="dataset">
+<h2><span class="num">4</span>Dataset Generation</h2>
+
+<p>Click <strong>Generate Dataset</strong> in the Recipe Builder. Generation runs in the background
+with a live progress bar; the UI stays responsive.</p>
+
+<h3>Output format</h3>
+<p>A single CSV — one row per sample:</p>
+<pre><code>x,y,z,roll,pitch,yaw,joint_1,joint_2,...,joint_N</code></pre>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Columns</th><th>Meaning</th><th>Units</th></tr></thead>
+<tbody>
+<tr><td><code>x, y, z</code></td><td>End-effector position</td><td>metres</td></tr>
+<tr><td><code>roll, pitch, yaw</code></td><td>End-effector orientation</td><td>radians</td></tr>
+<tr><td><code>joint_1 … joint_N</code></td><td>Joint values that produce that pose</td><td>degrees (revolute) / metres (prismatic)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Workspace analytics</h3>
+<p>After generation NeuroIK analyses the reachable volume (x/y/z ranges) and uses it to calibrate the
+Simulation sliders — so default targets land where the robot can actually go. This is why a Delta's Z
+slider is negative: it reaches below its base.</p>
+
+<div class="callout tip">
+    <strong>Tip:</strong> 10K is fine to smoke-test the pipeline. Use <strong>100K+</strong> for a
+    production-quality model. 1M with a complex chain can take several minutes.
+</div>
+</section>
+
+<!-- ============ 5. ML STUDIO ============ -->
+<section id="mlstudio">
+<h2><span class="num">5</span>ML Studio</h2>
+
+<figure>
+    <img src="assets/img/04-ml-studio.png" alt="ML Studio">
+    <figcaption>Step 3 — choose an architecture, set hyperparameters, and watch training stream live. Hover any ⓘ for a definition and its target value.</figcaption>
+</figure>
+
+<h3>Training configuration</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Setting</th><th>Range</th><th>Default</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><strong>Epochs</strong></td><td>1–1000</td><td>50</td><td>Full passes over the data</td></tr>
+<tr><td><strong>Batch size</strong></td><td>16–4096</td><td>256</td><td>Larger = smoother, more memory</td></tr>
+<tr><td><strong>Learning rate</strong></td><td>0.0001–1.0</td><td>0.001</td><td>Auto-reduced on plateau</td></tr>
+<tr><td><strong>Optimizer</strong></td><td colspan="2">Adam · AdamW · SGD · RMSProp</td><td>Adam/AdamW are robust defaults</td></tr>
+<tr><td><strong>Train/test split</strong></td><td>50–95%</td><td>80%</td><td>Held-out validation share</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Recommended starting point for 100K samples</h4>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Epochs</th><th>Batch</th><th>LR</th><th>Optimizer</th><th>Split</th></tr></thead>
+<tbody><tr><td>60</td><td>1024</td><td>0.001</td><td>Adam</td><td>0.85</td></tr></tbody>
+</table>
+</div>
+
+<h3>Live metrics</h3>
+<p>Training streams in real time: train/val loss, accuracy %, RMSE, MAE, learning rate, elapsed, ETA,
+CPU/GPU usage — plus two charts.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Metric</th><th>Meaning</th><th>Target for a good model</th></tr></thead>
+<tbody>
+<tr><td><strong>Accuracy %</strong></td><td>Share of validation targets reached within tolerance (checked by FK)</td><td>≥ 90% strong, ≥ 95% excellent</td></tr>
+<tr><td><strong>RMSE</strong></td><td>Root-mean-square end-effector position error</td><td>&lt; 0.02 m</td></tr>
+<tr><td><strong>MAE</strong></td><td>Typical miss distance</td><td>&lt; 0.01 m</td></tr>
+<tr><td><strong>Val loss</strong></td><td>Error on held-out data</td><td>Tracks train loss; a widening gap = overfitting</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout">
+    <strong>Note:</strong> RMSE and MAE are reported as <em>end-effector position error in metres</em>,
+    not joint error. Because IK has many valid answers, task-space error is the honest measure.
+</div>
+
+<h4>The two charts</h4>
+<ul>
+    <li><strong>Loss curves</strong> — train vs validation per epoch. Both should fall then flatten.</li>
+    <li><strong>Target vs Predicted</strong> — the pose the model actually reaches (FK on its predicted
+        joints) against the requested target, for x/y/z. A perfect model puts every point on the dashed
+        <code>y = x</code> line; scatter away from the diagonal means the arm misses.</li>
+</ul>
+
+<h3 id="models">5.1 Architectures</h3>
+
+<h4>MLP — Multi-Layer Perceptron</h4>
+<p class="kv"><b>Structure:</b> 6 → 256 → 512 → 512 → 256 → 128 → N, GELU activations, LayerNorm, dropout.<br>
+<b>Data:</b> 10K–100K &nbsp;·&nbsp; <b>Best for:</b> every robot type, as a fast baseline</p>
+<ul>
+    <li><strong>Pros</strong> — fastest to train, lowest memory, excellent on SCARA/Cartesian/Delta. The only architecture that exports to a complete TinyML header.</li>
+    <li><strong>Cons</strong> — no built-in mechanism for multi-modal solutions; can plateau on long articulated chains.</li>
+</ul>
+
+<h4>Transformer</h4>
+<p class="kv"><b>Structure:</b> encoder over 6 learned token embeddings, multi-head self-attention, LayerNorm, learned positional encoding.<br>
+<b>Data:</b> 100K+ &nbsp;·&nbsp; <b>Best for:</b> articulated / SCARA with long-range coupling</p>
+<ul>
+    <li><strong>Pros</strong> — attention captures dependencies between pose dimensions and joints.</li>
+    <li><strong>Cons</strong> — more memory, slower, hungrier for data.</li>
+</ul>
+
+<h4>GNN — Graph Neural Network</h4>
+<p class="kv"><b>Structure:</b> message passing over the kinematic chain — joints are nodes, links are edges; 3 rounds of learned node/edge updates.<br>
+<b>Data:</b> 50K+ &nbsp;·&nbsp; <b>Best for:</b> articulated arms</p>
+<ul>
+    <li><strong>Pros</strong> — the network encodes chain topology explicitly.</li>
+    <li><strong>Cons</strong> — overkill when the structure is trivial (Cartesian).</li>
+</ul>
+
+<h4>Diffusion — DDPM</h4>
+<p class="kv"><b>Structure:</b> denoises random joint vectors conditioned on the target pose; cosine schedule, FiLM conditioning. At inference it samples 16 candidates and keeps whichever FK says lands closest.<br>
+<b>Data:</b> 100K+ &nbsp;·&nbsp; <b>Best for:</b> poses with several valid solutions</p>
+<ul>
+    <li><strong>Pros</strong> — handles multi-modal IK naturally; strongest in ambiguous cases.</li>
+    <li><strong>Cons</strong> — ~16× slower inference, heaviest to train.</li>
+</ul>
+
+<h4>PINN — Physics-Informed</h4>
+<p class="kv"><b>Structure:</b> MLP backbone plus an FK-consistency loss penalising predictions whose FK misses the target.<br>
+<b>Data:</b> 10K–50K &nbsp;·&nbsp; <b>Best for:</b> small datasets</p>
+<ul>
+    <li><strong>Pros</strong> — best sample efficiency; physically consistent.</li>
+    <li><strong>Cons</strong> — dual objective can be unstable if the FK weight is off.</li>
+</ul>
+
+<h4>RL Agent</h4>
+<p class="kv"><b>Structure:</b> actor-critic (PPO-style) with behaviour-cloning pretraining; reward is pose error.<br>
+<b>Data:</b> 100K+ &nbsp;·&nbsp; <b>Best for:</b> research and experimentation</p>
+<ul>
+    <li><strong>Pros</strong> — can discover strategies absent from the data.</li>
+    <li><strong>Cons</strong> — needs reward tuning; non-deterministic outputs.</li>
+</ul>
+
+<h3 id="choosing">5.2 Choosing a model</h3>
+<pre><code>New to NeuroIK?
+  └─ Start with MLP — fast baseline, works for everything
+     └─ Accuracy acceptable? ──► Done. Use MLP.
+        └─ No ─► Robot has 6+ joints?
+           ├─ Yes ─► Transformer or GNN
+           └─ No  ─► Diffusion (multi-modal) or PINN (small data)
+                     └─ Still not enough? ─► RL Agent</code></pre>
+
+<div class="callout tip">
+    <strong>Tip:</strong> deploying to a microcontroller? Choose <strong>MLP</strong> from the start —
+    it is the only architecture that compiles to a complete standalone C header.
+</div>
+</section>
+
+<!-- ============ 6. SIMULATION ============ -->
+<section id="simulation">
+<h2><span class="num">6</span>Simulation Studio</h2>
+
+<figure>
+    <img src="assets/img/05-simulation.png" alt="Simulation Studio 3D viewport">
+    <figcaption>Step 4 — a real-scale parametric 3D model built from your recipe. Here: a 6-DOF articulated arm in its straight-up home pose.</figcaption>
+</figure>
+
+<h3>6.1 The 3D viewport</h3>
+<ul>
+    <li><strong>Controls</strong> — drag to orbit, scroll to zoom, right-drag to pan.</li>
+    <li><strong>Real scale</strong> — everything is drawn in metres, matching the recipe.</li>
+    <li><strong>Markers</strong> — a green sphere marks the target; a blue sphere marks where the model
+        actually put the end-effector.</li>
+    <li><strong>Collisions</strong> — for articulated arms, non-adjacent links are AABB-checked;
+        colliding pairs turn red.</li>
+</ul>
+<div class="callout">
+    <strong>Note on axes:</strong> the viewport is Z-up — <span style="color:#22a06b;font-weight:700">Z</span>
+    is vertical, matching the engine's convention. The Z slider raises the target; Y moves it in depth.
+</div>
+
+<h3>6.2 Running inference</h3>
+<p>Set the target with six controls — X/Y/Z in metres, roll/pitch/yaw in degrees — then press
+<strong>Predict &amp; Animate</strong>. Each slider has a <strong>number box</strong> beside it for exact
+entry; the box is authoritative, so it also accepts values <em>outside</em> the slider's range when you
+need a target the slider can't reach.</p>
+
+<figure>
+    <img src="assets/img/06-prediction-results.png" alt="Prediction results panel">
+    <figcaption>Prediction results: ML joints vs analytical IK, error metrics, and a target-vs-predicted breakdown per axis.</figcaption>
+</figure>
+
+<p>The results panel reports:</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><strong>Predicted joint values</strong></td><td>Raw output of the trained network</td></tr>
+<tr><td><strong>Analytical joint values</strong></td><td>Classical solver's answer, for comparison</td></tr>
+<tr><td><strong>IK Match badge</strong></td><td>Green when position error &lt; 2 cm <em>and</em> orientation error &lt; 5°</td></tr>
+<tr><td><strong>Pos / Ori error</strong></td><td>How far the end-effector landed from the target (m / °)</td></tr>
+<tr><td><strong>Inference time</strong></td><td>Model latency in ms</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout">
+    <strong>Note:</strong> the ML and analytical joint values often differ while both reach the target —
+    that is IK's one-to-many nature, not an error. Trust the <em>position error</em>, not the joint diff.
+</div>
+
+<p>The <strong>ⓘ</strong> icon next to <em>Analytical Joint Values</em> opens the actual IK formulas for
+the loaded robot — the closed-form SCARA solution, the Delta per-arm trilateration, the Cartesian direct
+mapping, or the damped-least-squares iteration used for Articulated and imported URDF robots.</p>
+
+<div class="callout warn">
+    <strong>"Unreachable / No IK" on a target that looks reachable?</strong> The badge reports that the
+    <em>analytical</em> solver found no solution. Check the target is genuinely within reach — a SCARA
+    with L1+L2 = 0.7 m cannot reach 0.82 m, and no solver (neural or classical) can change that. The ML
+    model will still return its closest attempt at the workspace edge.
+</div>
+
+<h3>6.3 Random target</h3>
+<p><strong>Random Target</strong> gives a guaranteed-reachable pose. If the project has a generated
+dataset it returns an actual row from it — the exact distribution the model was trained on, which is the
+fairest way to spot-check accuracy. Otherwise it samples random joints within your limits and runs FK.
+Either way the pose is reachable by construction, so a blind bounding-box guess never lands outside the
+workspace.</p>
+
+<h3>6.4 Export panel</h3>
+<p>After a successful prediction, the <strong>Export Model</strong> panel appears beneath the viewport.</p>
+</section>
+
+<!-- ============ 7. EXPORT ============ -->
+<section id="export">
+<h2><span class="num">7</span>Exporting Models</h2>
+
+<figure>
+    <img src="assets/img/07-export-formats.png" alt="Export formats panel">
+    <figcaption>Six deployment targets. Hover any ⓘ to see what each format is for.</figcaption>
+</figure>
+
+<p>Every export reports <code>format_name</code>, <code>file_size_mb</code>, <code>param_count</code>,
+<code>supported_runtime</code> and <code>validation_passed</code>, and is written to
+<code>data/exports/&lt;format&gt;/</code>.</p>
+
+<h3 id="norm">The one thing to get right: normalization</h3>
+<p>NeuroIK trains on <em>normalized</em> values. The exported graph therefore expects a normalized pose
+and returns normalized joints. Graph formats (ONNX, TF Lite, TensorRT) ship a
+<strong><code>model_meta.json</code></strong> beside the model holding the constants:</p>
+<span class="code-label">model_meta.json</span>
+<pre><code>{
+  <span class="tok-s">"input_dim"</span>: <span class="tok-n">6</span>,
+  <span class="tok-s">"output_dim"</span>: <span class="tok-n">4</span>,
+  <span class="tok-s">"pose_order"</span>: [<span class="tok-s">"x"</span>,<span class="tok-s">"y"</span>,<span class="tok-s">"z"</span>,<span class="tok-s">"roll"</span>,<span class="tok-s">"pitch"</span>,<span class="tok-s">"yaw"</span>],
+  <span class="tok-s">"normalization"</span>: { <span class="tok-s">"x_mean"</span>: [...], <span class="tok-s">"x_std"</span>: [...],
+                      <span class="tok-s">"y_mean"</span>: [...], <span class="tok-s">"y_std"</span>: [...] },
+  <span class="tok-s">"usage"</span>: <span class="tok-s">"normalized = (pose - x_mean) / x_std; joints = model(normalized) * y_std + y_mean"</span>
+}</code></pre>
+
+<div class="callout danger">
+    <strong>Important:</strong> skip the normalization step and the model returns numbers that look
+    plausible but are meaningless. Every snippet below applies it. (The <strong>TinyML</strong> header is
+    the exception — it bakes normalization <em>inside</em> <code>ik_forward()</code>.)
+</div>
+
+<h3>7.1 ONNX</h3>
+<p class="kv"><b>File:</b> <code>model.onnx</code> + <code>model_meta.json</code> &nbsp;·&nbsp;
+<b>Opset:</b> 17, dynamic batch &nbsp;·&nbsp;
+<b>Runtime:</b> ONNX Runtime, OpenVINO &nbsp;·&nbsp;
+<b>I/O:</b> <code>pose</code> float32[B,6] → <code>joints</code> float32[B,N]</p>
+
+<span class="code-label">Python</span>
+<pre><code><span class="tok-k">import</span> json
+<span class="tok-k">import</span> numpy <span class="tok-k">as</span> np
+<span class="tok-k">import</span> onnxruntime <span class="tok-k">as</span> ort
+
+<span class="tok-c"># 1. Load the constants shipped next to the model</span>
+meta = json.load(<span class="tok-f">open</span>(<span class="tok-s">"model_meta.json"</span>))[<span class="tok-s">"normalization"</span>]
+x_mean = np.array(meta[<span class="tok-s">"x_mean"</span>], np.float32)
+x_std  = np.array(meta[<span class="tok-s">"x_std"</span>],  np.float32)
+y_mean = np.array(meta[<span class="tok-s">"y_mean"</span>], np.float32)
+y_std  = np.array(meta[<span class="tok-s">"y_std"</span>],  np.float32)
+
+sess = ort.InferenceSession(<span class="tok-s">"model.onnx"</span>)
+
+<span class="tok-c"># 2. Target pose: [x, y, z, roll, pitch, yaw] — metres and radians</span>
+pose = np.array([[<span class="tok-n">0.5</span>, <span class="tok-n">0.3</span>, <span class="tok-n">0.2</span>, <span class="tok-n">0.0</span>, <span class="tok-n">0.0</span>, <span class="tok-n">0.0</span>]], dtype=np.float32)
+
+<span class="tok-c"># 3. Normalize -> infer -> denormalize</span>
+normalized = (pose - x_mean) / x_std
+joints = sess.run([<span class="tok-s">"joints"</span>], {<span class="tok-s">"pose"</span>: normalized})[<span class="tok-n">0</span>]
+joints = joints * y_std + y_mean
+
+<span class="tok-f">print</span>(joints[<span class="tok-n">0</span>])   <span class="tok-c"># degrees (revolute) / metres (prismatic)</span></code></pre>
+<p>Batch many poses at once by stacking rows — the batch axis is dynamic.</p>
+
+<h3>7.2 PyTorch</h3>
+<p class="kv"><b>File:</b> <code>model.pt</code> &nbsp;·&nbsp; <b>Runtime:</b> PyTorch 2.0+ &nbsp;·&nbsp;
+<b>Use for:</b> continued training, fine-tuning, research</p>
+<div class="callout">
+    <strong>Note:</strong> this is a full <em>checkpoint dictionary</em> (weights + architecture metadata
+    + normalization), not a TorchScript archive — so load it with <code>torch.load</code>, not
+    <code>torch.jit.load</code>. That is what makes it re-trainable.
+</div>
+
+<span class="code-label">Python</span>
+<pre><code><span class="tok-k">import</span> torch
+<span class="tok-k">import</span> numpy <span class="tok-k">as</span> np
+<span class="tok-k">from</span> backend.ml.models <span class="tok-k">import</span> create_model
+
+ckpt = torch.load(<span class="tok-s">"model.pt"</span>, map_location=<span class="tok-s">"cpu"</span>, weights_only=<span class="tok-k">False</span>)
+
+model = create_model(ckpt[<span class="tok-s">"model_type"</span>], ckpt[<span class="tok-s">"input_dim"</span>], ckpt[<span class="tok-s">"output_dim"</span>])
+model.load_state_dict(ckpt[<span class="tok-s">"model_state_dict"</span>])
+model.eval()
+
+x_mean, x_std = np.array(ckpt[<span class="tok-s">"x_mean"</span>]), np.array(ckpt[<span class="tok-s">"x_std"</span>])
+y_mean, y_std = np.array(ckpt[<span class="tok-s">"y_mean"</span>]), np.array(ckpt[<span class="tok-s">"y_std"</span>])
+
+pose = np.array([[<span class="tok-n">0.5</span>, <span class="tok-n">0.3</span>, <span class="tok-n">0.2</span>, <span class="tok-n">0.0</span>, <span class="tok-n">0.0</span>, <span class="tok-n">0.0</span>]])
+x = torch.tensor((pose - x_mean) / x_std, dtype=torch.float32)
+
+<span class="tok-k">with</span> torch.no_grad():
+    joints = model(x).numpy() * y_std + y_mean
+
+<span class="tok-f">print</span>(joints[<span class="tok-n">0</span>])</code></pre>
+
+<h3>7.3 TF Lite</h3>
+<p class="kv"><b>File:</b> <code>model.tflite</code> + <code>model_meta.json</code> &nbsp;·&nbsp;
+<b>Runtime:</b> TFLite, Android, iOS, embedded Linux</p>
+<p>Weights are transferred into an equivalent <code>tf.keras</code> functional model, then converted with
+default optimizations and validated through the TFLite interpreter.</p>
+
+<span class="code-label">Python</span>
+<pre><code><span class="tok-k">import</span> json
+<span class="tok-k">import</span> numpy <span class="tok-k">as</span> np
+<span class="tok-k">import</span> tflite_runtime.interpreter <span class="tok-k">as</span> tflite   <span class="tok-c"># or: tf.lite</span>
+
+nz = json.load(<span class="tok-f">open</span>(<span class="tok-s">"model_meta.json"</span>))[<span class="tok-s">"normalization"</span>]
+
+interp = tflite.Interpreter(<span class="tok-s">"model.tflite"</span>)
+interp.allocate_tensors()
+inp = interp.get_input_details()[<span class="tok-n">0</span>]
+out = interp.get_output_details()[<span class="tok-n">0</span>]
+
+pose = np.array([[<span class="tok-n">0.5</span>, <span class="tok-n">0.3</span>, <span class="tok-n">0.2</span>, <span class="tok-n">0.0</span>, <span class="tok-n">0.0</span>, <span class="tok-n">0.0</span>]], dtype=np.float32)
+normalized = ((pose - nz[<span class="tok-s">"x_mean"</span>]) / nz[<span class="tok-s">"x_std"</span>]).astype(np.float32)
+
+interp.set_tensor(inp[<span class="tok-s">"index"</span>], normalized)
+interp.invoke()
+joints = interp.get_tensor(out[<span class="tok-s">"index"</span>]) * nz[<span class="tok-s">"y_std"</span>] + nz[<span class="tok-s">"y_mean"</span>]
+
+<span class="tok-f">print</span>(joints[<span class="tok-n">0</span>])</code></pre>
+
+<h3>7.4 TensorRT</h3>
+<p class="kv"><b>File:</b> <code>model_tensorrt.onnx</code> + <code>model_meta.json</code> &nbsp;·&nbsp;
+<b>Runtime:</b> TensorRT 8.x+, Triton</p>
+<p>An ONNX graph with constant folding applied, ready to be compiled into a TensorRT engine
+<em>on the target device</em> — engines are hardware-specific and not portable.</p>
+
+<span class="code-label">Bash — build the engine on the target machine</span>
+<pre><code>trtexec --onnx=model_tensorrt.onnx \
+        --saveEngine=model.plan \
+        --fp16 \
+        --minShapes=pose:1x6 --optShapes=pose:8x6 --maxShapes=pose:64x6</code></pre>
+
+<span class="code-label">Python — run the engine</span>
+<pre><code><span class="tok-k">import</span> tensorrt <span class="tok-k">as</span> trt
+<span class="tok-k">import</span> numpy <span class="tok-k">as</span> np
+
+logger = trt.Logger(trt.Logger.WARNING)
+<span class="tok-k">with</span> <span class="tok-f">open</span>(<span class="tok-s">"model.plan"</span>, <span class="tok-s">"rb"</span>) <span class="tok-k">as</span> f, trt.Runtime(logger) <span class="tok-k">as</span> rt:
+    engine = rt.deserialize_cuda_engine(f.read())
+
+ctx = engine.create_execution_context()
+<span class="tok-c"># Normalize the pose exactly as in the ONNX example, copy to a device buffer,</span>
+<span class="tok-c"># run ctx.execute_async_v3(...), then denormalize the result.</span></code></pre>
+
+<div class="callout tip">
+    <strong>Tip:</strong> on a Jetson, build the engine on the Jetson itself. An engine built on a
+    desktop GPU will not load there.
+</div>
+
+<h3>7.5 ROS2 Package</h3>
+<p class="kv"><b>Runtime:</b> ROS2 Humble / Iron &nbsp;·&nbsp; <b>Output:</b> a ready-to-build package</p>
+<pre><code>neuroik_ros2/
+├── package.xml
+├── setup.py
+└── neuroik_ros2/
+    ├── __init__.py
+    └── ik_node.py        <span class="tok-c"># normalization constants embedded</span></code></pre>
+
+<span class="code-label">Python — a node that subscribes to a pose and publishes joints</span>
+<pre><code><span class="tok-k">import</span> rclpy
+<span class="tok-k">from</span> rclpy.node <span class="tok-k">import</span> Node
+<span class="tok-k">from</span> geometry_msgs.msg <span class="tok-k">import</span> Pose
+<span class="tok-k">from</span> sensor_msgs.msg <span class="tok-k">import</span> JointState
+<span class="tok-k">import</span> onnxruntime <span class="tok-k">as</span> ort
+<span class="tok-k">import</span> numpy <span class="tok-k">as</span> np
+
+<span class="tok-k">class</span> <span class="tok-f">IKNode</span>(Node):
+    <span class="tok-k">def</span> <span class="tok-f">__init__</span>(self):
+        <span class="tok-f">super</span>().__init__(<span class="tok-s">'ik_solver'</span>)
+        self.sess = ort.InferenceSession(<span class="tok-s">'model.onnx'</span>)
+        <span class="tok-c"># Constants are emitted into this file at export time</span>
+        self.x_mean, self.x_std = X_MEAN, X_STD
+        self.y_mean, self.y_std = Y_MEAN, Y_STD
+
+        self.pub = self.create_publisher(JointState, <span class="tok-s">'/joint_commands'</span>, <span class="tok-n">10</span>)
+        self.create_subscription(Pose, <span class="tok-s">'/target_pose'</span>, self.on_pose, <span class="tok-n">10</span>)
+
+    <span class="tok-k">def</span> <span class="tok-f">solve</span>(self, pose):
+        x = ((pose - self.x_mean) / self.x_std).astype(np.float32)
+        y = self.sess.run([<span class="tok-s">'joints'</span>], {<span class="tok-s">'pose'</span>: x[<span class="tok-k">None</span>, :]})[<span class="tok-n">0</span>][<span class="tok-n">0</span>]
+        <span class="tok-k">return</span> y * self.y_std + self.y_mean
+
+    <span class="tok-k">def</span> <span class="tok-f">on_pose</span>(self, msg):
+        pose = np.array([msg.position.x, msg.position.y, msg.position.z, <span class="tok-n">0.0</span>, <span class="tok-n">0.0</span>, <span class="tok-n">0.0</span>])
+        joints = self.solve(pose)
+        out = JointState()
+        out.header.stamp = self.get_clock().now().to_msg()
+        out.position = [<span class="tok-f">float</span>(np.deg2rad(j)) <span class="tok-k">for</span> j <span class="tok-k">in</span> joints]  <span class="tok-c"># ROS wants radians</span>
+        self.pub.publish(out)
+
+<span class="tok-k">def</span> <span class="tok-f">main</span>():
+    rclpy.init()
+    rclpy.spin(IKNode())
+    rclpy.shutdown()</code></pre>
+
+<span class="code-label">Bash</span>
+<pre><code>cp model.onnx neuroik_ros2/neuroik_ros2/     <span class="tok-c"># ship the model with the package</span>
+cd neuroik_ros2
+colcon build
+source install/setup.bash
+ros2 run neuroik_ros2 ik_node</code></pre>
+
+<div class="callout warn">
+    <strong>Warning:</strong> NeuroIK emits revolute joints in <strong>degrees</strong>; ROS2's
+    <code>JointState.position</code> expects <strong>radians</strong>. Convert, as above.
+</div>
+
+<h3>7.6 TinyML (C header)</h3>
+<p class="kv"><b>File:</b> <code>ik_model.h</code> &nbsp;·&nbsp;
+<b>Runtime:</b> ESP32, Arduino, STM32, any C99 toolchain &nbsp;·&nbsp;
+<b>Dependencies:</b> none — just <code>math.h</code></p>
+
+<p>A single self-contained header: weights, normalization constants, and a real
+<code>ik_forward()</code>. No interpreter, no framework, no heap allocation.</p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Symbol</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>IK_INPUT_DIM</code> / <code>IK_OUTPUT_DIM</code></td><td>Pose and joint counts</td></tr>
+<tr><td><code>ik_forward(pose, joints)</code></td><td>Full inference — normalizes, runs the net, denormalizes</td></tr>
+<tr><td><code>IK_X_MEAN</code>, <code>IK_X_STD</code>, <code>IK_Y_MEAN</code>, <code>IK_Y_STD</code></td><td>Constants (already applied inside <code>ik_forward</code>)</td></tr>
+</tbody>
+</table>
+</div>
+
+<span class="code-label">C / Arduino</span>
+<pre><code><span class="tok-k">#include</span> <span class="tok-s">"ik_model.h"</span>
+
+<span class="tok-k">void</span> <span class="tok-f">setup</span>() {
+    Serial.begin(<span class="tok-n">115200</span>);
+}
+
+<span class="tok-k">void</span> <span class="tok-f">loop</span>() {
+    <span class="tok-c">// Target pose: x, y, z (metres), roll, pitch, yaw (radians)</span>
+    <span class="tok-k">float</span> pose[IK_INPUT_DIM]   = {<span class="tok-n">0.5f</span>, <span class="tok-n">0.3f</span>, <span class="tok-n">0.2f</span>, <span class="tok-n">0.0f</span>, <span class="tok-n">0.0f</span>, <span class="tok-n">0.0f</span>};
+    <span class="tok-k">float</span> joints[IK_OUTPUT_DIM];
+
+    <span class="tok-c">// Normalization + denormalization happen inside — feed raw values.</span>
+    ik_forward(pose, joints);
+
+    <span class="tok-k">for</span> (<span class="tok-k">int</span> i = <span class="tok-n">0</span>; i &lt; IK_OUTPUT_DIM; i++) {
+        Serial.print(joints[i]);   <span class="tok-c">// degrees (revolute) / metres (prismatic)</span>
+        Serial.print(<span class="tok-s">' '</span>);
+    }
+    Serial.println();
+    delay(<span class="tok-n">1000</span>);
+}</code></pre>
+
+<p>Plain C, no Arduino:</p>
+<span class="code-label">Bash</span>
+<pre><code>gcc -std=c99 -O2 main.c -o ik_demo -lm     <span class="tok-c"># -lm for tanhf/erff/sqrtf</span></code></pre>
+
+<div class="callout warn">
+    <strong>Warning:</strong> a complete <code>ik_forward()</code> is generated <strong>only for MLP</strong>
+    models — a diffusion sampler or attention stack cannot be reduced to straight-line C. Other
+    architectures still export their raw weights, but you must write the forward pass yourself. For
+    embedded targets, train an MLP.
+</div>
+<div class="callout tip">
+    <strong>Tip:</strong> the header states its parameter count and estimated flash use at the top, and
+    warns above ~50K parameters. A default 6→256→512→512→256→128→N MLP is roughly 860K parameters
+    (~3.3 MB) — fine to inspect, far too big for an Uno. Shrink the network for real MCU work.
+</div>
+</section>
+
+<!-- ============ 8. ARCHITECTURE ============ -->
+<section id="architecture">
+<h2><span class="num">8</span>Application Architecture</h2>
+
+<div class="flow">
+    <div class="flow-title">NeuroIK Desktop App</div>
+
+    <!-- main pipeline -->
+    <div class="flow-row">
+        <div class="flow-node">
+            <span class="step">1</span>
+            <h5>Robot Config &amp; Recipe</h5>
+            <p>Links, joint types, limits</p>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">
+            <span class="step">2</span>
+            <h5>Dataset Generator</h5>
+            <p>Forward kinematics → reachable samples</p>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">
+            <span class="step">3</span>
+            <h5>ML Trainer</h5>
+            <p>PyTorch · task-space loss</p>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node">
+            <span class="step">4</span>
+            <h5>Simulation Studio</h5>
+            <p>Three.js 3D · FK validation</p>
+        </div>
+    </div>
+
+    <div class="flow-down"></div>
+
+    <!-- exporter -->
+    <div class="flow-single">
+        <div class="flow-node accent">
+            <h5>Exporter</h5>
+            <p>Trained checkpoint → deployable artifact</p>
+            <div class="flow-chips">
+                <span class="flow-chip">ONNX</span>
+                <span class="flow-chip">PyTorch</span>
+                <span class="flow-chip">TF Lite</span>
+                <span class="flow-chip">TensorRT</span>
+                <span class="flow-chip">ROS2</span>
+                <span class="flow-chip">TinyML</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- storage -->
+    <div class="flow-store">
+        <div class="flow-store-label">Local storage</div>
+        <div class="flow-chips">
+            <span class="flow-chip">data/datasets</span>
+            <span class="flow-chip">data/models</span>
+            <span class="flow-chip">data/exports</span>
+            <span class="flow-chip">data/projects</span>
+        </div>
+    </div>
+</div>
+
+<h3>Key internals</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Mechanism</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><strong>FK-first data</strong></td><td>Every sample is reachable by construction</td></tr>
+<tr><td><strong>Task-space loss</strong></td><td>Training rewards reaching the target, not matching one arbitrary joint solution</td></tr>
+<tr><td><strong>Progress streaming</strong></td><td>Generation and training push live progress to the UI</td></tr>
+<tr><td><strong>Output-dim matching</strong></td><td>The final layer matches the robot's joint count; a mismatched model is rejected rather than silently used</td></tr>
+<tr><td><strong>Normalization</strong></td><td>Pose and joints normalized by dataset statistics; constants saved with the checkpoint and shipped with graph/embedded exports</td></tr>
+<tr><td><strong>Degenerate masking</strong></td><td>Dimensions that never vary (a Delta's orientation) are masked so they add no noise</td></tr>
+<tr><td><strong>Diffusion sampling</strong></td><td>16 candidates → FK each → keep the closest</td></tr>
+<tr><td><strong>Rejection sampling</strong></td><td>Physically impossible configurations (a Delta whose arms can't assemble) return NaN from FK and are resampled, never written to a dataset</td></tr>
+<tr><td><strong>Exact URDF engine</strong></td><td>Imported robots use each joint's real <code>origin</code>/<code>axis</code> instead of generated DH parameters, so CAD geometry lines up with the motion</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Kinematic engines</h3>
+<p>Each robot family has its own engine under <code>backend/core/</code>. They share one interface —
+<code>forward_kinematics</code>, <code>inverse_kinematics</code>, and a differentiable
+<code>torch_forward_kinematics</code> used for the task-space loss — so the dataset generator, trainer
+and simulator treat every robot identically.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Engine</th><th>FK</th><th>IK</th></tr></thead>
+<tbody>
+<tr><td><code>scara.py</code></td><td>Closed-form</td><td>Analytical (elbow-down)</td></tr>
+<tr><td><code>cartesian.py</code></td><td>Direct mapping</td><td>Direct inverse</td></tr>
+<tr><td><code>delta.py</code></td><td>Trilateration of three spheres</td><td>Per-arm analytical, verified by FK round-trip</td></tr>
+<tr><td><code>articulated.py</code></td><td>Auto-generated DH chain</td><td>Damped least-squares, 12 restarts</td></tr>
+<tr><td><code>urdf_robot.py</code></td><td>Real <code>origin</code>·<code>axis</code> chain</td><td>Damped least-squares, 12 restarts</td></tr>
+</tbody>
+</table>
+</div>
+<p>The DLS solver weights position 10× over orientation — reaching the XYZ target is the point of IK —
+and reports <em>no solution</em> rather than returning an unconverged guess.</p>
+</section>
+
+<!-- ============ 9. PROJECTS ============ -->
+<section id="projects">
+<h2><span class="num">9</span>Project Management</h2>
+
+<figure>
+    <img src="assets/img/08-dashboard.png" alt="Project dashboard">
+    <figcaption>The Dashboard — counts, output folders, and the dataset/model selectors that drive retraining and export.</figcaption>
+</figure>
+
+<p>A project is the unit of work. It stores the robot type, recipe, every generated dataset, every
+training run with its metrics, and every export — as JSON under <code>data/projects/</code>. Reopening
+restores all of it, even after a restart.</p>
+
+<h3>Choosing which dataset / model to use</h3>
+<p>A project can hold several datasets and several trained models. The Dashboard has a dropdown for each:</p>
+<ul>
+    <li><strong>Active dataset</strong> → used by ML Studio for training and retraining.</li>
+    <li><strong>Active model</strong> → used by Simulation for prediction and by Export.</li>
+</ul>
+
+<h3>Deleting datasets and models</h3>
+<p>Each selector has a <strong>Delete</strong> button that removes the selected dataset or trained model
+from the project and deletes the app's working copy under <code>data/</code>. If you delete the active
+one, the next most recent is promoted automatically.</p>
+<div class="callout">
+    <strong>What is never deleted:</strong> copies mirrored into your own <em>Project Root Folder</em>,
+    and models you already exported. Those live outside the app's storage — they're yours, so NeuroIK
+    leaves them alone and tells you where the kept copy is.
+</div>
+<div class="callout warn">
+    <strong>Deletion is permanent.</strong> A deleted dataset can be regenerated from its recipe; a
+    deleted model must be retrained.
+</div>
+
+<h3>Output folders</h3>
+<p>By default files stay in the app's <code>data/</code> folder. Set a <strong>Project Root Folder</strong>
+(the <strong>Browse</strong> button opens a native folder picker) and NeuroIK also mirrors deliverables to:</p>
+<pre><code>&lt;root&gt;/&lt;project name&gt;/
+├── datasets/          <span class="tok-c"># dataset_&lt;id&gt;.csv</span>
+└── exports/
+    ├── onnx/          <span class="tok-c"># model.onnx + model_meta.json</span>
+    ├── tinyml/        <span class="tok-c"># ik_model.h</span>
+    └── ros2/          <span class="tok-c"># neuroik_ros2/ package</span></code></pre>
+<p>The copy in <code>data/</code> is kept as the working copy the trainer and simulator read from.</p>
+
+<h3>Imported URDF projects</h3>
+<p>A project that uses a Custom URDF also stores the <strong>path to the source file</strong>. Reopening
+re-reads it, restoring the exact chain and the CAD meshes. If that folder has since moved or been
+deleted, the kinematics still come back from the recipe saved in the project — only the meshes are
+missing, and NeuroIK asks you to re-import to restore them.</p>
+</section>
+
+<!-- ============ 11. FAQ ============ -->
+<section id="faq">
+<h2><span class="num">10</span>Troubleshooting &amp; FAQ</h2>
+
+<h4>1. The exported model returns nonsense values</h4>
+<p>Almost always missing normalization. ONNX/TFLite/TensorRT graphs expect a <em>normalized</em> pose and
+return <em>normalized</em> joints — apply the constants from <code>model_meta.json</code>. See
+<a href="#norm">§7 Normalization</a>.</p>
+
+<h4>2. Export succeeds but validation fails</h4>
+<p>The model's output width must equal the robot's joint count. Check that the active robot matches the
+one the model was trained on.</p>
+
+<h4>3. “No trained model found” when exporting</h4>
+<p>Train a model first. Export uses the model selected on the Dashboard, falling back to the most recent
+checkpoint.</p>
+
+<h4>4. Accuracy is poor</h4>
+<p>In order: generate more data (100K+), train longer, confirm the robot config matches training, then
+try a stronger architecture (Transformer/Diffusion). If you changed the recipe, you <em>must</em>
+regenerate and retrain.</p>
+
+<h4>5. Diffusion inference feels slow</h4>
+<p>By design — it samples 16 candidates and FK-checks each. For real-time control use MLP or Transformer.</p>
+
+<h4>6. TF Lite export fails</h4>
+<p>TensorFlow is required for that format: <code>pip install tensorflow</code>. Every other format works
+without it.</p>
+
+<h4>7. TinyML header has no ik_forward()</h4>
+<p>You exported a non-MLP model. Only plain feed-forward networks reduce to straight-line C. Train an MLP.</p>
+
+<h4>8. The 3D viewport is blank</h4>
+<p>The viewport uses WebGL. Update your GPU drivers; on a remote/virtual desktop, hardware acceleration
+may be unavailable.</p>
+
+<h4>9. Dataset generation takes too long</h4>
+<p>1M samples with a complex chain takes several minutes. Use 100K while iterating.</p>
+
+<h4>10. "No .urdf or .xacro file found under: &lt;path&gt;"</h4>
+<p>The folder holds no description file. Point at the folder that actually contains the
+<code>.urdf</code>/<code>.xacro</code> (subfolders are searched too), or at the file itself. Quoted
+paths pasted from Explorer's <em>Copy as path</em> are handled.</p>
+
+<h4>11. My URDF imported, but a link's mesh is missing</h4>
+<p>Two likely reasons. Either the mesh is in an unsupported format — only <strong>STL, DAE and OBJ</strong>
+render; STEP/IGES show a placeholder — or the URDF never declares that link. NeuroIK draws what the
+description declares, so spare meshes shipped in the folder but not referenced by any
+<code>&lt;link&gt;</code> won't appear. The import warnings list both cases.</p>
+
+<h4>12. "This file uses &lt;xacro:macro&gt;"</h4>
+<p>Macro expansion isn't supported — a partial implementation could silently build the wrong robot.
+Pre-expand with the ROS tool and import the result:</p>
+<span class="code-label">Bash</span>
+<pre><code>xacro robot.xacro -o robot.urdf</code></pre>
+
+<h4>13. My imported robot has one DOF fewer than I expected</h4>
+<p>Probably a <code>&lt;mimic&gt;</code> joint — a gripper's second finger, say. It is mechanically driven
+by another joint, so it is not an independent DOF and must not be a network output. It still moves in the
+3D view, following its source joint.</p>
+
+</section>
+
+<div class="footer">
+    NeuroIK v1.0 — Robotic Arm Studio · Documentation
+    <br>
+    <br>
+    Built with <i class="bx bxs-heart" style="color: var(--error); font-size: 12px;"></i> by <b>GSSV</b>
+</div>
+
+</main>
+</div>
+
+<script>
+// Scrollspy: highlight the section currently in view.
+const links = [...document.querySelectorAll('#toc a')];
+const targets = links
+    .map(a => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+const spy = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const id = '#' + e.target.id;
+        links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === id));
+    });
+}, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+
+targets.forEach(t => spy.observe(t));
+
+// Mobile drawer
+const sidebar = document.getElementById('sidebar');
+document.getElementById('menuBtn').addEventListener('click', () => sidebar.classList.toggle('open'));
+links.forEach(a => a.addEventListener('click', () => sidebar.classList.remove('open')));
+</script>
+
+</body>
+</html>
